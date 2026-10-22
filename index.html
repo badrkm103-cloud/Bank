@@ -28,7 +28,7 @@
             overflow-x: hidden;
         }
 
-        /* ================= إصلاح الهيدر ================= */
+        /* ================= الهيدر ================= */
         .hero-header {
             background: var(--gradient-blue);
             padding: 6rem 1rem 8rem;
@@ -36,7 +36,7 @@
             color: white;
             border-radius: 0 0 30px 30px;
             position: relative;
-            overflow: hidden; /* لإخفاء الإيموجيات الخارجة عن الحدود */
+            overflow: hidden;
         }
         
         /* حاوية الإيموجيات المتحركة */
@@ -54,12 +54,11 @@
         .floating-emojis span {
             position: absolute;
             display: block;
-            opacity: 0.2; /* شفافية هادئة */
+            opacity: 0.2;
             animation: float 8s infinite ease-in-out;
             will-change: transform;
         }
 
-        /* توزيع الإيموجيات بأحجام ومواقع وتأخيرات مختلفة */
         .emoji-1 { top: 15%; left: 10%; font-size: 3rem; animation-delay: 0s; animation-duration: 9s; }
         .emoji-2 { top: 70%; left: 5%; font-size: 2rem; animation-delay: 1s; animation-duration: 7s; }
         .emoji-3 { top: 40%; left: 25%; font-size: 4rem; animation-delay: 2s; animation-duration: 10s; }
@@ -809,6 +808,52 @@
         .admin-table .btn-sm-action { padding: 0.2rem 0.5rem; font-size: 0.8rem; border-radius: 6px; }
         .admin-table .btn-sm-action i { font-size: 0.8rem; }
 
+        /* تنسيقات إضافية لإدارة المستخدمين */
+        .user-link {
+            cursor: pointer;
+            color: var(--primary-blue);
+            font-weight: 700;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            transition: text-decoration-color 0.3s;
+        }
+        .user-link:hover {
+            text-decoration-color: var(--primary-blue);
+        }
+
+        .user-details-section {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-idea-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-danger-outline {
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            background: transparent;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        .btn-danger-outline:hover {
+            background: #ef4444;
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .hero-header { padding-top: 2rem; }
             .header-actions-container {
@@ -852,7 +897,7 @@
             <span class="emoji-15">💡</span>
         </div>
 
-        <!-- أزرار الأعلى (مفصولة تماماً عن العنوان) -->
+        <!-- أزرار الأعلى -->
         <div class="header-actions-container">
             <div id="userProfileBadge" class="user-badge" onclick="handleProfileClick()">
                 <i class="fas fa-user-circle"></i> <span id="displayUsername">زائر</span>
@@ -862,7 +907,7 @@
             </div>
         </div>
 
-        <!-- العنوان والوصف في المنتصف -->
+        <!-- العنوان والوصف -->
         <div class="container header-title-container">
             <h1>💡 بنك الأفكار الشبابية</h1>
             <p>أكاديمية قيام - المساحة التفاعلية الملهمة للأنشطة والبرامج</p>
@@ -895,7 +940,7 @@
             </div>
         </div>
 
-        <!-- شريط التبويبات بالترتيب المطلوب -->
+        <!-- شريط التبويبات -->
         <div class="filter-container">
             <button class="filter-pill refresh-pill" id="refreshBtn" onclick="refreshIdeas(this)">
                 <i class="fas fa-sync-alt"></i> تحديث الأفكار
@@ -999,6 +1044,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>اسم المستخدم</th>
+                                        <th>عدد الأفكار</th>
                                     </tr>
                                 </thead>
                                 <tbody id="adminUsersTableBody">
@@ -1236,6 +1282,47 @@
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-primary w-100" style="border-radius: 12px; font-weight: bold; padding: 0.8rem;" data-bs-dismiss="modal">إغلاق</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. User Management Modal -->
+    <div class="modal fade" id="userManagementModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">⚙️ إدارة المستخدم</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="manageOriginalUsername">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">اسم المستخدم الحالي</label>
+                        <input type="text" class="form-control" id="manageUsername" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">كلمة المرور الجديدة (اتركها فارغة لعدم التغيير)</label>
+                        <input type="password" class="form-control" id="managePassword" placeholder="أدخل كلمة مرور جديدة (أرقام فقط)">
+                    </div>
+
+                    <div class="user-details-section">
+                        <h6 class="fw-bold mb-2">📊 إحصائيات المستخدم</h6>
+                        <p class="mb-2">عدد الأفكار: <span id="manageIdeaCount" class="fw-bold">0</span></p>
+                        <div id="manageIdeasList" style="max-height: 150px; overflow-y: auto;">
+                            <!-- Ideas list will be injected here -->
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mb-2" onclick="saveUserChanges()" style="border-radius: 10px; font-weight: bold;">
+                        <i class="fas fa-save"></i> حفظ التغييرات
+                    </button>
+
+                    <button class="btn btn-danger-outline w-100" onclick="deleteUserAccount()">
+                        <i class="fas fa-trash-alt"></i> حذف الحساب نهائياً
+                    </button>
                 </div>
             </div>
         </div>
@@ -2151,17 +2238,23 @@
             document.getElementById('statSportBar').style.width = `${sportPercent}%`;
             document.getElementById('statCreativeBar').style.width = `${creativePercent}%`;
 
-            // 2. Users Table
+            // 2. Users Table with Idea Count
             const usersTableBody = document.getElementById('adminUsersTableBody');
             usersTableBody.innerHTML = '';
             if (usersList.length === 0) {
-                usersTableBody.innerHTML = '<tr><td colspan="2" class="text-muted">لا يوجد مسجلين بعد.</td></tr>';
+                usersTableBody.innerHTML = '<tr><td colspan="3" class="text-muted">لا يوجد مسجلين بعد.</td></tr>';
             } else {
                 usersList.forEach((userObj, i) => {
+                    const userIdeasCount = ideas.filter(idea => idea.author === userObj.username).length;
                     usersTableBody.innerHTML += `
                         <tr>
                             <td>${i + 1}</td>
-                            <td>${userObj.username}</td>
+                            <td>
+                                <span class="user-link" onclick="openUserManagement('${userObj.username}')">
+                                    ${userObj.username}
+                                </span>
+                            </td>
+                            <td>${userIdeasCount} ${userIdeasCount === 1 ? 'فكرة' : 'أفكار'}</td>
                         </tr>
                     `;
                 });
@@ -2226,6 +2319,173 @@
                     renderIdeas();
                     renderAdminPage();
                 }
+            }
+        }
+
+        // --- User Management Modal Logic ---
+        async function openUserManagement(username) {
+            document.getElementById('manageOriginalUsername').value = username;
+            document.getElementById('manageUsername').value = username;
+            document.getElementById('managePassword').value = '';
+
+            const userIdeas = ideas.filter(idea => idea.author === username);
+            document.getElementById('manageIdeaCount').innerText = userIdeas.length;
+
+            const ideasListDiv = document.getElementById('manageIdeasList');
+            if (userIdeas.length === 0) {
+                ideasListDiv.innerHTML = '<p class="text-muted small">لا توجد أفكار لهذا المستخدم.</p>';
+            } else {
+                ideasListDiv.innerHTML = userIdeas.map(idea => `
+                    <div class="user-idea-item">
+                        <span>${idea.emoji} ${idea.title}</span>
+                        <span class="badge bg-secondary">${idea.type}</span>
+                    </div>
+                `).join('');
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('userManagementModal'));
+            modal.show();
+        }
+
+        async function saveUserChanges() {
+            const oldUsername = document.getElementById('manageOriginalUsername').value;
+            const newUsername = document.getElementById('manageUsername').value.trim();
+            const newPassword = document.getElementById('managePassword').value.trim();
+
+            // Validation
+            const arabicRegex = /^[\u0600-\u06FF\s]+$/;
+            if (!arabicRegex.test(newUsername)) {
+                alert('يرجى إدخال اسم مستخدم باللغة العربية فقط.');
+                return;
+            }
+
+            if (newPassword && !/^[0-9]+$/.test(newPassword)) {
+                alert('كلمة المرور يجب أن تكون أرقاماً فقط.');
+                return;
+            }
+
+            const btn = event.target;
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الحفظ...';
+            btn.disabled = true;
+
+            try {
+                // Check if new username exists (if changed)
+                if (newUsername !== oldUsername) {
+                    const { data: existing } = await supabaseClient
+                        .from('users_app')
+                        .select('username')
+                        .eq('username', newUsername)
+                        .single();
+                    if (existing) {
+                        alert('اسم المستخدم الجديد موجود بالفعل، يرجى اختيار اسم آخر.');
+                        return;
+                    }
+                }
+
+                // Prepare update object
+                let updateData = { username: newUsername };
+                if (newPassword) {
+                    updateData.password = newPassword;
+                }
+
+                // Update users_app
+                const { error: userError } = await supabaseClient
+                    .from('users_app')
+                    .update(updateData)
+                    .eq('username', oldUsername);
+                if (userError) throw userError;
+
+                // If username changed, update author in ideas table
+                if (newUsername !== oldUsername) {
+                    const { error: ideasError } = await supabaseClient
+                        .from('ideas')
+                        .update({ author: newUsername })
+                        .eq('author', oldUsername);
+                    if (ideasError) throw ideasError;
+
+                    // Update local ideas array
+                    ideas.forEach(idea => {
+                        if (idea.author === oldUsername) idea.author = newUsername;
+                    });
+
+                    // Update current session if the user being edited is the logged-in user
+                    if (currentUser === oldUsername) {
+                        setCurrentUser(newUsername);
+                        currentUser = newUsername;
+                        document.getElementById('displayUsername').innerText = newUsername;
+                    }
+                }
+
+                // Update local state
+                await fetchIdeas(false); // Refresh ideas list
+                renderAdminPage(); // Refresh admin page
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('userManagementModal'));
+                modal.hide();
+
+                alert('تم حفظ التغييرات بنجاح.');
+
+            } catch (error) {
+                console.error("Error saving user changes:", error);
+                alert('حدث خطأ أثناء حفظ التغييرات. يرجى المحاولة مرة أخرى.');
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        async function deleteUserAccount() {
+            const username = document.getElementById('manageOriginalUsername').value;
+            
+            if (!confirm(`هل أنت متأكد من حذف حساب "${username}" نهائياً؟ سيتم حذف جميع أفكاره أيضاً.`)) {
+                return;
+            }
+
+            const btn = event.target;
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الحذف...';
+            btn.disabled = true;
+
+            try {
+                // Delete user's ideas first
+                const { error: ideasError } = await supabaseClient
+                    .from('ideas')
+                    .delete()
+                    .eq('author', username);
+                if (ideasError) throw ideasError;
+
+                // Delete user account
+                const { error: userError } = await supabaseClient
+                    .from('users_app')
+                    .delete()
+                    .eq('username', username);
+                if (userError) throw userError;
+
+                // Remove from local array
+                ideas = ideas.filter(idea => idea.author !== username);
+
+                // If deleting own account, log out
+                if (currentUser === username) {
+                    logoutUser();
+                }
+
+                await fetchIdeas(false);
+                renderAdminPage();
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('userManagementModal'));
+                modal.hide();
+
+                alert('تم حذف الحساب بنجاح.');
+
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                alert('حدث خطأ أثناء حذف الحساب. يرجى المحاولة مرة أخرى.');
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
             }
         }
 
