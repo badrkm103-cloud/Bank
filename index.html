@@ -854,6 +854,30 @@
             color: white;
         }
 
+        /* تنبيه مخصص */
+        .custom-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            z-index: 9999;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+
         @media (max-width: 768px) {
             .hero-header { padding-top: 2rem; }
             .header-actions-container {
@@ -1320,7 +1344,7 @@
                         <i class="fas fa-save"></i> حفظ التغييرات
                     </button>
 
-                    <button class="btn btn-danger-outline w-100" onclick="deleteUserAccount()">
+                    <button class="btn btn-danger-outline w-100" id="deleteUserBtn" onclick="deleteUserAccount()">
                         <i class="fas fa-trash-alt"></i> حذف الحساب نهائياً
                     </button>
                 </div>
@@ -1726,7 +1750,7 @@
                         description: item.description || 'لا يوجد وصف.',
                         tools: toolsArray,
                         duration: item.timeframe || 'غير محدد',
-                        author: item.author || 'مستخدم'
+                        author: item.author || item.username || 'مستخدم'
                     };
                 });
 
@@ -2438,50 +2462,59 @@
 
         async function deleteUserAccount() {
             const username = document.getElementById('manageOriginalUsername').value;
-            
-            if (!confirm(`هل أنت متأكد من حذف حساب "${username}" نهائياً؟ سيتم حذف جميع أفكاره أيضاً.`)) {
+            if (!username) return;
+
+            if (!confirm(`هل أنت متأكد من حذف حساب "${username}" نهائياً وجميع أفكاره؟`)) {
                 return;
             }
 
-            const btn = event.target;
+            const btn = document.getElementById('deleteUserBtn');
             const originalBtnText = btn.innerHTML;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الحذف...';
             btn.disabled = true;
 
             try {
-                // Delete user's ideas first
+                // 1. حذف جميع أفكار المستخدم من جدول ideas
                 const { error: ideasError } = await supabaseClient
                     .from('ideas')
                     .delete()
-                    .eq('author', username);
-                if (ideasError) throw ideasError;
+                    .or(`author.eq.${username},username.eq.${username}`);
+                if (ideasError) {
+                    console.error("Error deleting user ideas:", ideasError);
+                    throw ideasError;
+                }
 
-                // Delete user account
+                // 2. حذف الحساب من جدول users_app
                 const { error: userError } = await supabaseClient
                     .from('users_app')
                     .delete()
                     .eq('username', username);
-                if (userError) throw userError;
+                if (userError) {
+                    console.error("Error deleting user account:", userError);
+                    throw userError;
+                }
 
-                // Remove from local array
+                // 3. تحديث المصفوفة المحلية
                 ideas = ideas.filter(idea => idea.author !== username);
 
-                // If deleting own account, log out
+                // 4. إذا كان المستخدم المحذوف هو نفسه المسجل حالياً، تسجيل الخروج
                 if (currentUser === username) {
                     logoutUser();
                 }
 
+                // 5. تحديث الواجهة
                 await fetchIdeas(false);
                 renderAdminPage();
                 
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('userManagementModal'));
-                modal.hide();
+                // إغلاق النافذة
+                const modalEl = document.getElementById('userManagementModal');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
 
-                alert('تم حذف الحساب بنجاح.');
+                alert('تم حذف الحساب وجميع أفكاره بنجاح.');
 
             } catch (error) {
-                console.error("Error deleting user:", error);
+                console.error("Error deleting user account:", error);
                 alert('حدث خطأ أثناء حذف الحساب. يرجى المحاولة مرة أخرى.');
             } finally {
                 btn.innerHTML = originalBtnText;
@@ -2495,10 +2528,77 @@
             modal.show();
         }
 
+        // --- Bulk Ideas Auto-Insert via URL Parameter ---
+        async function processBulkDataFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bulkData = urlParams.get('bulk_data');
+
+            if (bulkData) {
+                try {
+                    const ideasData = JSON.parse(decodeURIComponent(bulkData));
+                    
+                    if (Array.isArray(ideasData) && ideasData.length > 0) {
+                        // تجهيز البيانات وتعيين 'النظام' كصاحب الفكرة
+                        const processedData = ideasData.map(idea => ({
+                            title: idea.title || 'بدون عنوان',
+                            category: idea.category || idea.type || 'إبداعي',
+                            description: idea.description || 'لا يوجد وصف.',
+                            requirements: idea.requirements || idea.tools || '',
+                            tools: idea.tools || idea.requirements || '',
+                            timeframe: idea.timeframe || idea.duration || 'غير محدد',
+                            emoji: idea.emoji || '💡',
+                            author: 'النظام',
+                            username: 'النظام' // للأمان في حال كان الحقل username
+                        }));
+
+                        const { data, error } = await supabaseClient
+                            .from('ideas')
+                            .insert(processedData);
+
+                        if (error) {
+                            console.error("Error inserting bulk ideas:", error);
+                            alert('حدث خطأ أثناء إضافة الأفكار التلقائية من الرابط.');
+                        } else {
+                            // مسح متغيرات الرابط لمنع التكرار
+                            window.history.replaceState({}, document.title, window.location.pathname);
+
+                            // إظهار تنبيه أنيق
+                            const toastDiv = document.createElement('div');
+                            toastDiv.className = 'custom-toast';
+                            toastDiv.innerHTML = `<i class="fas fa-check-circle"></i> 🎉 تمت إضافة ${processedData.length} أفكار جديدة بنجاح إلى بنك الأفكار من النظام!`;
+                            document.body.appendChild(toastDiv);
+
+                            // إخفاء التنبيه بعد 5 ثوانٍ
+                            setTimeout(() => {
+                                toastDiv.style.display = 'none';
+                            }, 5000);
+
+                            // تحديث الأفكار في الواجهة
+                            await fetchIdeas(false);
+                            
+                            // تحديث لوحة التحكم إذا كانت مفتوحة
+                            if (document.getElementById('adminPage').classList.contains('active')) {
+                                renderAdminPage();
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error parsing bulk_data from URL:", e);
+                }
+            }
+        }
+
         // التشغيل الأولي
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
             renderEmojiPicker();
-            fetchIdeas();
+            
+            // فحص الرابط لإضافة الأفكار تلقائياً (إن وجدت)
+            await processBulkDataFromUrl();
+            
+            // جلب الأفكار (بعد التأكد من إضافة الأفكار الجديدة إن وجدت)
+            await fetchIdeas();
+            
+            // التحقق من حالة تسجيل الدخول
             checkAuth();
         });
     </script>
