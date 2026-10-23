@@ -140,61 +140,6 @@
         .admin-info-badge.active {
             display: flex;
         }
-
-        /* Toggle Switch للمشرف */
-        .admin-toggle-container {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            color: white;
-            font-weight: 700;
-            font-size: 0.9rem;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #10b981;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
         /* ============================================== */
 
         /* شريط التحكم */
@@ -871,20 +816,9 @@
             text-decoration: underline;
             text-decoration-color: transparent;
             transition: text-decoration-color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
         .user-link:hover {
             text-decoration-color: var(--primary-blue);
-        }
-
-        .admin-crown {
-            color: #ef4444;
-            font-size: 0.9rem;
-            background: #fee2e2;
-            padding: 2px 6px;
-            border-radius: 4px;
         }
 
         .user-details-section {
@@ -994,13 +928,6 @@
             </div>
             <div id="adminInfoBadge" class="admin-info-badge" onclick="openAdminDashboard()">
                 <i class="fas fa-info-circle"></i> إدارة المعلومات
-            </div>
-            <div id="adminToggleContainer" class="admin-toggle-container">
-                <label class="switch">
-                    <input type="checkbox" id="adminToggle" onchange="toggleAdminMode()">
-                    <span class="slider"></span>
-                </label>
-                <span>وضع المشرف</span>
             </div>
         </div>
 
@@ -1251,9 +1178,6 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites-pane" type="button" role="tab">⭐ المفضلة</button>
                         </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="profile-info-tab" data-bs-toggle="tab" data-bs-target="#profile-info-pane" type="button" role="tab">⚙️ المعلومات الشخصية</button>
-                        </li>
                     </ul>
                     <div class="tab-content" id="dashboardTabsContent">
                         <div class="tab-pane fade show active pt-3" id="my-ideas-pane" role="tabpanel">
@@ -1261,22 +1185,6 @@
                         </div>
                         <div class="tab-pane fade pt-3" id="favorites-pane" role="tabpanel">
                             <div class="row g-3" id="favoritesGrid"></div>
-                        </div>
-                        <div class="tab-pane fade pt-3" id="profile-info-pane" role="tabpanel">
-                            <div class="mb-3">
-                                <label class="form-label">اسم المستخدم</label>
-                                <input type="text" class="form-control" id="profileUsername">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">كلمة المرور</label>
-                                <div class="input-group">
-                                    <input type="password" class="form-control" id="profilePassword">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('profilePassword', this)">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <button class="btn btn-primary w-100" onclick="updateUserProfile()">حفظ التغييرات</button>
                         </div>
                     </div>
                 </div>
@@ -1413,7 +1321,6 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="manageOriginalUsername">
-                    <input type="hidden" id="manageUserIsAdmin" value="false">
                     
                     <div class="mb-3">
                         <label class="form-label">اسم المستخدم الحالي</label>
@@ -1435,10 +1342,6 @@
 
                     <button class="btn btn-primary w-100 mb-2" onclick="saveUserChanges()" style="border-radius: 10px; font-weight: bold;">
                         <i class="fas fa-save"></i> حفظ التغييرات
-                    </button>
-
-                    <button class="btn btn-warning w-100 mb-2" id="toggleAdminBtn" onclick="toggleUserAdminStatus()" style="border-radius: 10px; font-weight: bold;">
-                        <i class="fas fa-crown"></i> <span id="toggleAdminText">ترقية إلى مشرف</span>
                     </button>
 
                     <button class="btn btn-danger-outline w-100" id="deleteUserBtn" onclick="deleteUserAccount()">
@@ -1565,16 +1468,6 @@
                 SafeStorage.removeItem('qiyam_currentUser');
             }
         }
-        function getIsAdmin() {
-            return SafeStorage.getItem('qiyam_isAdmin') === 'true';
-        }
-        function setIsAdmin(val) {
-            if(val) {
-                SafeStorage.setItem('qiyam_isAdmin', 'true');
-            } else {
-                SafeStorage.setItem('qiyam_isAdmin', 'false');
-            }
-        }
         function getFavorites() {
             const user = getCurrentUser();
             if(!user) return [];
@@ -1598,10 +1491,6 @@
                 const authModalEl = document.getElementById('authModal');
                 const authModal = bootstrap.Modal.getInstance(authModalEl);
                 if (authModal) authModal.hide();
-                
-                // التحقق من صلاحية المشرف المحفوظة
-                isAdmin = getIsAdmin() && (user !== 'ضيف');
-                updateAdminUI();
             } else {
                 currentUser = null;
                 document.getElementById('displayUsername').innerText = 'زائر';
@@ -1610,45 +1499,12 @@
             }
         }
 
-        function updateAdminUI() {
-            if (isAdmin) {
-                document.getElementById('adminStatus').classList.add('active');
-                document.getElementById('adminLoginBtn').style.display = 'none';
-                document.getElementById('adminInfoBadge').classList.add('active');
-                document.getElementById('adminToggleContainer').style.display = 'flex';
-                document.getElementById('adminToggle').checked = true;
-            } else {
-                document.getElementById('adminStatus').classList.remove('active');
-                document.getElementById('adminLoginBtn').style.display = 'inline-flex';
-                document.getElementById('adminInfoBadge').classList.remove('active');
-                document.getElementById('adminToggleContainer').style.display = 'none';
-            }
-        }
-
-        function toggleAdminMode() {
-            const toggle = document.getElementById('adminToggle');
-            isAdmin = toggle.checked;
-            setIsAdmin(isAdmin);
-            updateAdminUI();
-            renderIdeas();
-            if (isAdmin) {
-                if (document.getElementById('userDashboardModal').classList.contains('show')) {
-                    renderUserDashboard();
-                }
-            } else {
-                closeAdminPage();
-            }
-        }
-
         function loginAsGuest() {
             currentUser = 'ضيف';
             setCurrentUser(null); // Clear storage so refresh shows modal again
-            setIsAdmin(false);
-            isAdmin = false;
             document.getElementById('displayUsername').innerText = 'ضيف';
             const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
             if(modal) modal.hide();
-            updateAdminUI();
             renderIdeas();
         }
 
@@ -1700,13 +1556,11 @@
                 // Insert new user
                 const { error: insertError } = await supabaseClient
                     .from('users_app')
-                    .insert([{ username: username, password: password, is_admin: false }]);
+                    .insert([{ username: username, password: password }]);
 
                 if (insertError) throw insertError;
                 
                 setCurrentUser(username);
-                setIsAdmin(false);
-                isAdmin = false;
                 this.reset();
                 
                 const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
@@ -1744,10 +1598,7 @@
                 if (error) throw error;
 
                 if (data && data.length > 0) {
-                    const userData = data[0];
                     setCurrentUser(username);
-                    setIsAdmin(userData.is_admin || false);
-                    isAdmin = userData.is_admin || false;
                     this.reset();
                     
                     const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
@@ -1769,13 +1620,10 @@
 
         function logoutUser() {
             setCurrentUser(null);
-            setIsAdmin(false);
             currentUser = null;
-            isAdmin = false;
             checkAuth();
             renderIdeas();
-            const modal = bootstrap.Modal.getInstance(document.getElementById('userDashboardModal'));
-            if(modal) modal.hide();
+            bootstrap.Modal.getInstance(document.getElementById('userDashboardModal')).hide();
         }
 
         // --- Profile Badge Logic ---
@@ -1796,90 +1644,8 @@
                 return;
             }
             renderUserDashboard();
-            // Load profile data
-            document.getElementById('profileUsername').value = currentUser;
-            // We need to fetch password from db (or keep it as placeholder, but better fetch)
-            fetchUserPassword(currentUser);
             const modal = new bootstrap.Modal(document.getElementById('userDashboardModal'));
             modal.show();
-        }
-
-        async function fetchUserPassword(username) {
-            try {
-                const { data } = await supabaseClient.from('users_app').select('password').eq('username', username).single();
-                if(data) document.getElementById('profilePassword').value = data.password;
-            } catch(e) { console.error(e); }
-        }
-
-        function togglePasswordVisibility(inputId, btn) {
-            const input = document.getElementById(inputId);
-            const icon = btn.querySelector('i');
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        async function updateUserProfile() {
-            const newUsername = document.getElementById('profileUsername').value.trim();
-            const newPassword = document.getElementById('profilePassword').value.trim();
-            const oldUsername = currentUser;
-
-            if(!newUsername) { alert("الرجاء إدخال اسم المستخدم"); return; }
-            const arabicRegex = /^[\u0600-\u06FF\s]+$/;
-            if (!arabicRegex.test(newUsername)) { alert('يرجى إدخال اسم مستخدم باللغة العربية فقط.'); return; }
-            if (newPassword && !/^[0-9]+$/.test(newPassword)) { alert('كلمة المرور يجب أن تكون أرقاماً فقط.'); return; }
-
-            const btn = event.target;
-            const originalBtnText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري...';
-            btn.disabled = true;
-
-            try {
-                // Check if new username exists (if changed)
-                if(newUsername !== oldUsername) {
-                    const { data: existing } = await supabaseClient.from('users_app').select('username').eq('username', newUsername).single();
-                    if(existing) { alert('اسم المستخدم الجديد موجود بالفعل.'); return; }
-                }
-
-                const updateData = { username: newUsername };
-                if(newPassword) updateData.password = newPassword;
-
-                // Update users_app
-                const { error: userError } = await supabaseClient.from('users_app').update(updateData).eq('username', oldUsername);
-                if (userError) throw userError;
-
-                // Update ideas if username changed
-                if(newUsername !== oldUsername) {
-                    const { error: ideasError } = await supabaseClient.from('ideas').update({ username: newUsername, author: newUsername }).or(`username.eq.${oldUsername},author.eq.${oldUsername}`);
-                    if (ideasError) throw ideasError;
-                    
-                    // Update local
-                    ideas.forEach(i => {
-                        if(i.username === oldUsername) i.username = newUsername;
-                        if(i.author === oldUsername) i.author = newUsername;
-                    });
-                    
-                    setCurrentUser(newUsername);
-                    currentUser = newUsername;
-                    document.getElementById('displayUsername').innerText = newUsername;
-                }
-
-                await fetchIdeas(false);
-                alert('تم تحديث البيانات بنجاح.');
-                
-            } catch(err) {
-                console.error(err);
-                alert('حدث خطأ أثناء تحديث البيانات: ' + (err.message || ''));
-            } finally {
-                btn.innerHTML = originalBtnText;
-                btn.disabled = false;
-            }
         }
 
         function renderUserDashboard() {
@@ -2262,6 +2028,7 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري الإرسال...`;
 
+            // بناء البيانات مع جميع الحقول المطلوبة
             const payload = {
                 title: title,
                 category: category,
@@ -2271,7 +2038,7 @@
                 timeframe: duration,
                 emoji: selectedEmoji,
                 username: authorName,
-                author: authorName
+                author: authorName // إضافة author احتياطياً
             };
 
             try {
@@ -2298,6 +2065,7 @@
                 let errorMsg = "حدث خطأ أثناء إرسال الفكرة.";
                 if (error.message) errorMsg += " تفاصيل: " + error.message;
                 else if (error.details) errorMsg += " تفاصيل: " + error.details;
+                else if (error.hint) errorMsg += " تلميح: " + error.hint;
                 
                 alert(errorMsg);
             } finally {
@@ -2358,38 +2126,23 @@
             openModal('loginModal');
         }
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const password = document.getElementById('adminPassword').value.trim();
             const normalizedPass = password.replace(/\s+/g, '').toUpperCase();
             
             if (normalizedPass === 'WD40') {
-                const btn = this.querySelector('button[type="submit"]');
-                const originalBtnText = btn.innerHTML;
-                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري...';
-                btn.disabled = true;
-
-                try {
-                    // Update is_admin in database
-                    const { error } = await supabaseClient.from('users_app').update({ is_admin: true }).eq('username', currentUser);
-                    if(error) throw error;
-                    
-                    isAdmin = true;
-                    setIsAdmin(true);
-                    document.getElementById('adminPassword').value = '';
-                    
-                    bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-                    updateAdminUI();
-                    renderIdeas();
-                    if (document.getElementById('userDashboardModal').classList.contains('show')) {
-                        renderUserDashboard();
-                    }
-                } catch(err) {
-                    console.error(err);
-                    alert("حدث خطأ أثناء تفعيل وضع المشرف.");
-                } finally {
-                    btn.innerHTML = originalBtnText;
-                    btn.disabled = false;
+                isAdmin = true;
+                document.getElementById('adminPassword').value = '';
+                
+                document.getElementById('adminStatus').classList.add('active');
+                document.getElementById('adminLoginBtn').style.display = 'none';
+                document.getElementById('adminInfoBadge').classList.add('active'); 
+                
+                bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
+                renderIdeas();
+                if (document.getElementById('userDashboardModal').classList.contains('show')) {
+                    renderUserDashboard();
                 }
             } else {
                 alert('كلمة المرور غير صحيحة! يرجى المحاولة مرة أخرى.');
@@ -2398,10 +2151,15 @@
 
         function logoutAdmin() {
             isAdmin = false;
-            setIsAdmin(false);
-            updateAdminUI();
+            document.getElementById('adminStatus').classList.remove('active');
+            document.getElementById('adminLoginBtn').style.display = 'inline-flex';
+            document.getElementById('adminInfoBadge').classList.remove('active'); 
+            
             closeAdminPage();
             renderIdeas();
+            if (document.getElementById('userDashboardModal').classList.contains('show')) {
+                renderUserDashboard();
+            }
         }
 
         async function deleteIdea(index) {
@@ -2468,7 +2226,7 @@
         async function renderAdminPage() {
             let usersList = [];
             try {
-                const { data } = await supabaseClient.from('users_app').select('username, is_admin');
+                const { data } = await supabaseClient.from('users_app').select('username');
                 if (data) usersList = data;
             } catch(e) {
                 console.error("Error fetching users:", e);
@@ -2508,13 +2266,12 @@
             } else {
                 usersList.forEach((userObj, i) => {
                     const userIdeasCount = ideas.filter(idea => (idea.username === userObj.username || idea.author === userObj.username)).length;
-                    const crownHtml = userObj.is_admin ? '<span class="admin-crown"><i class="fas fa-crown"></i></span>' : '';
                     usersTableBody.innerHTML += `
                         <tr>
                             <td>${i + 1}</td>
                             <td>
-                                <span class="user-link" onclick="openUserManagement('${userObj.username}', ${userObj.is_admin})">
-                                    ${crownHtml} ${userObj.username}
+                                <span class="user-link" onclick="openUserManagement('${userObj.username}')">
+                                    ${userObj.username}
                                 </span>
                             </td>
                             <td>${userIdeasCount} ${userIdeasCount === 1 ? 'فكرة' : 'أفكار'}</td>
@@ -2584,22 +2341,10 @@
         }
 
         // --- User Management Modal Logic ---
-        async function openUserManagement(username, isUserAdmin) {
+        async function openUserManagement(username) {
             document.getElementById('manageOriginalUsername').value = username;
             document.getElementById('manageUsername').value = username;
             document.getElementById('managePassword').value = '';
-            document.getElementById('manageUserIsAdmin').value = isUserAdmin || false;
-            
-            // Update toggle button
-            const toggleBtn = document.getElementById('toggleAdminBtn');
-            const toggleText = document.getElementById('toggleAdminText');
-            if(isUserAdmin) {
-                toggleBtn.className = 'btn btn-outline-danger w-100 mb-2';
-                toggleText.innerText = 'سحب صلاحية المشرف';
-            } else {
-                toggleBtn.className = 'btn btn-warning w-100 mb-2';
-                toggleText.innerText = 'ترقية إلى مشرف';
-            }
 
             const userIdeas = ideas.filter(idea => (idea.username === username || idea.author === username));
             document.getElementById('manageIdeaCount').innerText = userIdeas.length;
@@ -2701,50 +2446,6 @@
             }
         }
 
-        async function toggleUserAdminStatus() {
-            const username = document.getElementById('manageOriginalUsername').value;
-            const currentIsAdmin = document.getElementById('manageUserIsAdmin').value === 'true';
-            
-            const btn = document.getElementById('toggleAdminBtn');
-            const originalBtnText = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> جاري...';
-            btn.disabled = true;
-
-            try {
-                const newStatus = !currentIsAdmin;
-                const { error } = await supabaseClient.from('users_app').update({ is_admin: newStatus }).eq('username', username);
-                if(error) throw error;
-                
-                document.getElementById('manageUserIsAdmin').value = newStatus;
-                
-                // Update button text
-                if(newStatus) {
-                    btn.className = 'btn btn-outline-danger w-100 mb-2';
-                    document.getElementById('toggleAdminText').innerText = 'سحب صلاحية المشرف';
-                } else {
-                    btn.className = 'btn btn-warning w-100 mb-2';
-                    document.getElementById('toggleAdminText').innerText = 'ترقية إلى مشرف';
-                }
-
-                // If current user's admin status changed, update session
-                if (username === currentUser) {
-                    setIsAdmin(newStatus);
-                    isAdmin = newStatus;
-                    updateAdminUI();
-                }
-
-                renderAdminPage();
-                alert('تم تحديث الصلاحية بنجاح.');
-                
-            } catch(err) {
-                console.error("Error toggling admin status:", err);
-                alert("حدث خطأ أثناء تحديث الصلاحية.");
-            } finally {
-                btn.innerHTML = originalBtnText;
-                btn.disabled = false;
-            }
-        }
-
         async function deleteUserAccount() {
             const username = document.getElementById('manageOriginalUsername').value;
             if (!username) return;
@@ -2759,21 +2460,29 @@
             btn.disabled = true;
 
             try {
-                // 1. حذف جميع أفكار المستخدم من جدول ideas
+                // 1. حذف جميع أفكار المستخدم من جدول ideas باستخدام الشرط or
+                console.log("Deleting ideas for username:", username);
                 const { error: ideasError } = await supabaseClient
                     .from('ideas')
                     .delete()
                     .or(`username.eq.${username},author.eq.${username}`);
                     
-                if (ideasError) throw ideasError;
+                if (ideasError) {
+                    console.error("Error deleting user ideas:", ideasError);
+                    throw ideasError;
+                }
 
                 // 2. حذف الحساب من جدول users_app
+                console.log("Deleting user account:", username);
                 const { error: userError } = await supabaseClient
                     .from('users_app')
                     .delete()
                     .eq('username', username);
                     
-                if (userError) throw userError;
+                if (userError) {
+                    console.error("Error deleting user account:", userError);
+                    throw userError;
+                }
 
                 // 3. تحديث المصفوفة المحلية
                 ideas = ideas.filter(idea => (idea.username !== username && idea.author !== username));
