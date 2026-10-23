@@ -1962,10 +1962,6 @@
         document.getElementById('ideaForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Allow guest? per requirement we allow username to be 'ضيف' if guest. But earlier we blocked.
-            // User requested: "إسناد اسم المستخدم الحالي إلى الفكرة (أو كلمة 'ضيف' إذا كان في وضع الضيف"
-            // So we allow adding as guest now.
-            
             const authorName = (currentUser && currentUser !== 'ضيف') ? currentUser : 'ضيف';
 
             const submitBtn = document.getElementById('submitIdeaBtn');
@@ -2415,7 +2411,6 @@
                 if (userError) throw userError;
 
                 if (newUsername !== oldUsername) {
-                    // Update ideas table where username matches
                     const { error: ideasError } = await supabaseClient
                         .from('ideas')
                         .update({ username: newUsername, author: newUsername })
@@ -2465,7 +2460,7 @@
             btn.disabled = true;
 
             try {
-                // 1. حذف جميع أفكار المستخدم من جدول ideas باستخدام username
+                // 1. حذف جميع أفكار المستخدم من جدول ideas باستخدام الشرط or
                 console.log("Deleting ideas for username:", username);
                 const { error: ideasError } = await supabaseClient
                     .from('ideas')
@@ -2552,10 +2547,8 @@
                             console.error("Error inserting bulk ideas:", error);
                             alert('حدث خطأ أثناء إضافة الأفكار التلقائية من الرابط.');
                         } else {
-                            // مسح متغيرات الرابط لمنع التكرار
                             window.history.replaceState({}, document.title, window.location.pathname);
 
-                            // إظهار تنبيه أنيق
                             const toastDiv = document.createElement('div');
                             toastDiv.className = 'custom-toast';
                             toastDiv.innerHTML = `<i class="fas fa-check-circle"></i> 🎉 تمت إضافة ${processedData.length} أفكار جديدة بنجاح إلى بنك الأفكار من النظام!`;
